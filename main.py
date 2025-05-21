@@ -1,14 +1,14 @@
+import datetime
+
 import streamlit as st
-from dotenv import load_dotenv
 from openai import OpenAI
 
 from prompts import system_prompt, user_prompt
 
-load_dotenv()
 
 name = st.text_input("姓名")
 sex = st.selectbox('性别', ['男', '女', '非二元性别'])
-birthdate = st.date_input("出生日期", min_value=st.datetime.date(1900, 1, 1))
+birthdate = st.date_input("出生日期", min_value=datetime.date(1900, 1, 1))
 birthtime = st.time_input("出生时间")
 birth_city = st.text_input("出生地点")
 
@@ -18,6 +18,7 @@ result = st.empty()
 
 if start_btn:
     client = OpenAI(
+        api_key=st.secrets['OPENAI_API_KEY'],
         base_url="https://api.deepseek.com"
     )
     response = client.chat.completions.create(

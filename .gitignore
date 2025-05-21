@@ -10,4 +10,4 @@ wheels/
 .venv
 
 # sensitive information
-*.env
+*secrets.toml
