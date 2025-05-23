@@ -6,7 +6,7 @@ import markdown2
 from html2image import Html2Image
 
 class ImageGenerator:
-    def __init__(self, font_family='Arial', font_size=12, font_path=None, width=400): # Increased default font_size, added width
+    def __init__(self, font_family='Arial', font_size=30, font_path=None, width=1080): # Increased default font_size, added width
         self.font_family = font_family
         self.font_size = font_size
         self.font_path = Path(__file__).parent.parent.parent / 'assets' / 'XiaolaiSC-Regular.ttf'
@@ -37,8 +37,7 @@ class ImageGenerator:
                 font-family: '{font_family}';
                 font-size: {self.font_size}px; # Use the updated font_size
                 color: #333;
-                width: {self.width-10}px; 
-                padding: 10px 0;
+                padding: 50px 50px;
                 word-wrap: break-word;
             }}
             li {{
@@ -58,7 +57,7 @@ class ImageGenerator:
 
     def _calculate_image_height(self, text):
         lines = text.split('\n')
-        return len(lines) * self.font_size * 2 + 150
+        return len(lines) * self.font_size * 2
 
     def generate_image(self, fate, output_file='output.png'):
         try:
