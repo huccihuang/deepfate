@@ -6,16 +6,15 @@ import markdown2
 from html2image import Html2Image
 
 class ImageGenerator:
-    def __init__(self, font_family='Arial', font_size=12, font_path=None, width=300): # Increased default font_size, added width
+    def __init__(self, font_family='Arial', font_size=12, font_path=None, width=400): # Increased default font_size, added width
         self.font_family = font_family
         self.font_size = font_size
         self.font_path = Path(__file__).parent.parent.parent / 'assets' / 'XiaolaiSC-Regular.ttf'
-        self.width = width # Store the width
+        self.width = width
 
     def _build_html(self, markdown_text):
         html_body = markdown2.markdown(markdown_text)
         font_abs_path = self.font_path.resolve()
-        print(font_abs_path)
         font_face = ""
         if self.font_path:
             font_face = f"""
@@ -34,14 +33,22 @@ class ImageGenerator:
         <style>
             {font_face}
             body {{
+                background-color: #FFFEF8;
                 font-family: '{font_family}';
                 font-size: {self.font_size}px; # Use the updated font_size
-                /*padding: 20px;*/
-                line-height: 1.6;
                 color: #333;
-                width: {self.width}px; 
-                word-wrap:break-word;
+                width: {self.width-10}px; 
+                padding: 10px 0;
+                word-wrap: break-word;
             }}
+            li {{
+                margin-bottom: 5px;
+                line-height: 1.5;
+            }}
+            p {{
+                line-height: 1.5;
+            }}
+
         </style>
         </head>
         <body>{html_body}</body>
@@ -49,11 +56,15 @@ class ImageGenerator:
         """
         return html
 
+    def _calculate_image_height(self, text):
+        lines = text.split('\n')
+        return len(lines) * self.font_size * 2 + 150
+
     def generate_image(self, fate, output_file='output.png'):
         dedent_fate = textwrap.dedent(fate)
         html = self._build_html(dedent_fate)
-        print(html)
-        hti = Html2Image(size=(self.width, 1000))
+        image_height = int(self._calculate_image_height(dedent_fate))
+        hti = Html2Image(size=(self.width, image_height))
         with tempfile.TemporaryDirectory() as tmpdir:
             hti.output_path = tmpdir
             hti.screenshot(html_str=html, save_as='temp.png')
