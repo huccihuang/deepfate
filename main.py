@@ -25,6 +25,7 @@ generator = ImageGenerator()
 
 if start_btn:
     response = calculator.calculate(name, sex, birthdate, birthtime, birth_city, system_prompt, user_prompt)
+    st.session_state.response = response    
     st.session_state.share_clicked = False
     
 # 如果有结果，显示结果和分享按钮
