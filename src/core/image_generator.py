@@ -6,10 +6,11 @@ import markdown2
 from html2image import Html2Image
 
 class ImageGenerator:
-    def __init__(self, font_family='Arial', font_size=40, font_path=None): # Increased default font_size
+    def __init__(self, font_family='Arial', font_size=12, font_path=None, width=300): # Increased default font_size, added width
         self.font_family = font_family
         self.font_size = font_size
         self.font_path = Path(__file__).parent.parent.parent / 'assets' / 'XiaolaiSC-Regular.ttf'
+        self.width = width # Store the width
 
     def _build_html(self, markdown_text):
         html_body = markdown2.markdown(markdown_text)
@@ -35,9 +36,11 @@ class ImageGenerator:
             body {{
                 font-family: '{font_family}';
                 font-size: {self.font_size}px; # Use the updated font_size
-                padding: 20px;
+                /*padding: 20px;*/
                 line-height: 1.6;
                 color: #333;
+                width: {self.width}px; 
+                word-wrap:break-word;
             }}
         </style>
         </head>
@@ -46,16 +49,11 @@ class ImageGenerator:
         """
         return html
 
-    def generate_image(self, name, fate, output_file='output.png'):
-        text = f'''
-        # {name} 的命理分析
-
-        {fate}
-        '''
-        dedent_text = textwrap.dedent(text)
-        html = self._build_html(dedent_text)
+    def generate_image(self, fate, output_file='output.png'):
+        dedent_fate = textwrap.dedent(fate)
+        html = self._build_html(dedent_fate)
         print(html)
-        hti = Html2Image()
+        hti = Html2Image(size=(self.width, 1000))
         with tempfile.TemporaryDirectory() as tmpdir:
             hti.output_path = tmpdir
             hti.screenshot(html_str=html, save_as='temp.png')
