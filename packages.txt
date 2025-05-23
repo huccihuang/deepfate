@@ -1,2 +1,2 @@
-chromium-browser
-chromium-chromedriver
+chromium
+chromium-driver
