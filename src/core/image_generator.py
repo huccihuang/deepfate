@@ -61,12 +61,18 @@ class ImageGenerator:
         return len(lines) * self.font_size * 2 + 150
 
     def generate_image(self, fate, output_file='output.png'):
-        dedent_fate = textwrap.dedent(fate)
-        html = self._build_html(dedent_fate)
-        image_height = int(self._calculate_image_height(dedent_fate))
-        hti = Html2Image(size=(self.width, image_height))
-        with tempfile.TemporaryDirectory() as tmpdir:
-            hti.output_path = tmpdir
-            hti.screenshot(html_str=html, save_as='temp.png')
-            os.rename(os.path.join(tmpdir, 'temp.png'), output_file)
-        return output_file
+        try:
+            dedent_fate = textwrap.dedent(fate)
+            html = self._build_html(dedent_fate)
+            image_height = int(self._calculate_image_height(dedent_fate))
+            hti = Html2Image(size=(self.width, image_height))
+            with tempfile.TemporaryDirectory() as tmpdir:
+                hti.output_path = tmpdir
+                temp_file = os.path.join(tmpdir, 'temp.png')
+                hti.screenshot(html_str=html, save_as='temp.png')
+                # 使用 shutil.copy2 替代 os.rename
+                import shutil
+                shutil.copy2(temp_file, output_file)
+            return output_file
+        except Exception as e:
+            raise Exception(f"生成图片时发生错误：{str(e)}")
