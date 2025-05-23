@@ -1,7 +1,15 @@
+import os
 import datetime
 import streamlit as st
 from src.core.fate_calculator import FateCalculator
+from src.core.image_generator import ImageGenerator
 from src.config.prompts import system_prompt, user_prompt
+
+# 使用session_state来保存状态
+if 'response' not in st.session_state:
+    st.session_state.response = None
+if 'share_clicked' not in st.session_state:
+    st.session_state.share_clicked = False
 
 name = st.text_input("姓名")
 sex = st.selectbox('性别', ['男', '女', '非二元性别'])
@@ -10,9 +18,26 @@ birthtime = st.time_input("出生时间")
 birth_city = st.text_input("出生地点")
 start_btn = st.button("开始算命")
 result = st.empty()
+share_btn = st.empty()
+share_pic = st.empty()
 
 calculator = FateCalculator()
+generator = ImageGenerator()
 
 if start_btn:
-    response = calculator.calculate(name, sex, birthdate, birthtime, birth_city, system_prompt, user_prompt)
-    result.markdown(response)
+    # response = calculator.calculate(name, sex, birthdate, birthtime, birth_city, system_prompt, user_prompt)
+    st.session_state.response = "大吉"
+    st.session_state.share_clicked = False
+    
+# 如果有结果，显示结果和分享按钮
+if st.session_state.response and not st.session_state.share_clicked:
+    result.markdown(st.session_state.response)
+    # 显示分享按钮并捕获其点击状态
+    share_button_clicked = share_btn.button("分享")
+
+    # 如果分享按钮被点击
+    if share_button_clicked:
+        st.session_state.share_clicked = True
+        temp_image_path = generator.generate_image(name, st.session_state.response) # 使用session state中的response
+        st.image(temp_image_path, caption="右键保存图片")
+        os.unlink(temp_image_path) # 这可能会在下一个运行周期显示图片之前删除文件

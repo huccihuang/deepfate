@@ -5,7 +5,20 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "html2image>=2.0.7",
+    "markdown2>=2.5.3",
+    "numpy>=2.2.5",
     "openai>=1.78.1",
+    "pillow>=11.2.1",
     "python-dotenv>=1.1.0",
+    "requests>=2.32.3",
     "streamlit>=1.45.0",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
