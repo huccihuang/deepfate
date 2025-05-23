@@ -1,9 +1,14 @@
 import os
 import datetime
+from pathlib import Path
+
 import streamlit as st
+
 from src.core.fate_calculator import FateCalculator
 from src.core.image_generator import ImageGenerator
 from src.config.prompts import system_prompt, user_prompt
+
+st.set_page_config(page_title="DeepFate", page_icon=Path(__file__).parent.parent.parent / 'assets' / 'deepfate_icon.svg')
 
 if 'response' not in st.session_state:
     st.session_state.response = None
