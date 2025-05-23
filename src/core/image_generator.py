@@ -1,23 +1,26 @@
+import os
+import tempfile
+import textwrap
+from pathlib import Path
 import markdown2
 from html2image import Html2Image
-import tempfile
-import os
 
 class ImageGenerator:
-    def __init__(self, font_family='Arial', font_size=20, font_path=None):
+    def __init__(self, font_family='Arial', font_size=40, font_path=None): # Increased default font_size
         self.font_family = font_family
         self.font_size = font_size
-        self.font_path = "https://github.com/lxgw/kose-font/releases/download/v3.120/XiaolaiSC-Regular.ttf"
+        self.font_path = Path(__file__).parent.parent.parent / 'assets' / 'XiaolaiSC-Regular.ttf'
 
     def _build_html(self, markdown_text):
         html_body = markdown2.markdown(markdown_text)
+        font_abs_path = self.font_path.resolve()
+        print(font_abs_path)
         font_face = ""
         if self.font_path:
-            abs_path = os.path.abspath(self.font_path)
             font_face = f"""
             @font-face {{
                 font-family: 'CustomFont';
-                src: url('file://{abs_path}');
+                src: url('file://{font_abs_path}');
             }}
             """
             font_family = 'CustomFont'
@@ -31,7 +34,7 @@ class ImageGenerator:
             {font_face}
             body {{
                 font-family: '{font_family}';
-                font-size: {self.font_size}px;
+                font-size: {self.font_size}px; # Use the updated font_size
                 padding: 20px;
                 line-height: 1.6;
                 color: #333;
@@ -49,7 +52,9 @@ class ImageGenerator:
 
         {fate}
         '''
-        html = self._build_html(text)
+        dedent_text = textwrap.dedent(text)
+        html = self._build_html(dedent_text)
+        print(html)
         hti = Html2Image()
         with tempfile.TemporaryDirectory() as tmpdir:
             hti.output_path = tmpdir
