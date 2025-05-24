@@ -2,20 +2,27 @@ import math
 import os
 import tempfile
 import textwrap
+import tomllib
 from pathlib import Path
 
 import markdown2
 from html2image import Html2Image
 
+# 加载TOML配置
+def load_config():
+    config_path = Path(__file__).parent.parent / 'config' / 'share_image_parameters.toml'
+    with open(config_path, 'rb') as f:  # tomllib 需要以二进制模式读取文件
+        return tomllib.load(f)
+
+# 获取配置
+CONFIG = load_config()
+
 class HtmlStyleBuilder:
-    '''
-    构建html样式
-    '''
-    def __init__(self, font_path=None, font_family='Arial', font_size=30):
+    def __init__(self, font_path=None, font_family=CONFIG['image']['font_family'], font_size=CONFIG['image']['font_size']):
         self.font_path = font_path
         self.font_family = font_family
         self.font_size = font_size
-        self.qr_code_path = Path(__file__).parent.parent.parent / 'assets' / 'deepfate_qr_code.png'
+        self.qr_code_path = Path(__file__).parent.parent.parent / CONFIG['assets']['qr_code_path']
 
     def _get_font_style(self):
         font_face = ""
@@ -35,16 +42,19 @@ class HtmlStyleBuilder:
 
     def _get_qr_code_html(self):
         qr_code_abs_path = self.qr_code_path.resolve()
+        qr_config = CONFIG['qr_code']
         return f'''
-            <div style="text-align: center; margin: 20px 0;">
-                <img src="file://{qr_code_abs_path}" style="width: 200px; height: 200px;">
-                <p style="margin-top: 10px; font-size: 16px; color: #666;">扫码获取我的结果</p>
+            <div style="text-align: center; margin: {qr_config['margin_top']}px 0 {qr_config['margin_bottom']}px;">
+                <img src="file://{qr_code_abs_path}" style="width: {qr_config['width']}px; height: {qr_config['height']}px;">
+                <p style="margin-top: 10px; font-size: {qr_config['caption_font_size']}px; color: {qr_config['caption_color']};">{qr_config['caption_text']}</p>
             </div>
         '''
 
     def build_html(self, markdown_text):
         html_body = markdown2.markdown(markdown_text)
         font_face, font_family = self._get_font_style()
+        layout = CONFIG['layout']
+        image = CONFIG['image']
 
         html = f"""
         <html>
@@ -52,27 +62,20 @@ class HtmlStyleBuilder:
         <style>
             {font_face}
             body {{
-                background-color: #FFFEF8;
+                background-color: {image['background_color']};
                 font-family: '{font_family}';
                 font-size: {self.font_size}px;
-                color: #333;
-                padding: 50px 50px;
+                color: {image['text_color']};
+                padding: {layout['padding']['top']}px {layout['padding']['right']}px;
                 word-wrap: break-word;
                 position: relative;
             }}
             li {{
-                margin-bottom: 5px;
-                line-height: 1.5;
+                margin-bottom: {layout['list_margin_bottom']}px;
+                line-height: {layout['line_height_ratio']};
             }}
             p {{
-                line-height: 1.5;
-            }}
-            .qr-code {{
-                position: absolute;
-                bottom: 20px;
-                right: 20px;
-                width: 100px;
-                height: 100px;
+                line-height: {layout['line_height_ratio']};
             }}
         </style>
         </head>
@@ -86,23 +89,23 @@ class HtmlStyleBuilder:
 
 
 class ImageGenerator:
-    '''
-    根据传入的md文本生成图片
-    '''
-    def __init__(self, font_family='Arial', font_size=30, font_path=None, width=1080):
+    def __init__(self, font_family=CONFIG['image']['font_family'], font_size=CONFIG['image']['font_size'], 
+                 font_path=None, width=CONFIG['image']['width']):
         self.width = width
         self.html_builder = HtmlStyleBuilder(
-            font_path=Path(__file__).parent.parent.parent / 'assets' / 'XiaolaiSC-Regular.ttf',
+            font_path=Path(__file__).parent.parent.parent / CONFIG['assets']['font_path'],
             font_family=font_family,
             font_size=font_size
         )
 
     def _calculate_image_height(self, text):
-        # 计算实际的文本宽度（考虑容器宽度和padding）
-        available_width = self.width - 40  # 假设左右各有20px的padding
+        height_config = CONFIG['layout']['height_calculation']
         
-        # 使用更精确的行高比例
-        line_height_ratio = 1.5  # 一般建议行高是字体大小的1.5倍
+        # 计算实际的文本宽度（考虑容器宽度和padding）
+        available_width = self.width - height_config['side_padding']
+        
+        # 使用配置中的行高比例
+        line_height_ratio = height_config['line_height_ratio']
         
         # 计算每行能容纳的大概字符数（假设中文字符宽度约等于字体大小）
         chars_per_line = available_width // self.html_builder.font_size
@@ -119,11 +122,10 @@ class ImageGenerator:
         
         # 计算总高度：行数 * 行高 + 上下padding
         base_height = total_lines * self.html_builder.font_size * line_height_ratio
-        padding_top = 150  # 上padding
-        padding_bottom = 150  # 下padding
-        qrcode_height = 200
+        total_height = base_height + height_config['padding_top'] + height_config['padding_bottom'] + CONFIG['qr_code']['height'] + 100
         
-        return int(base_height + padding_top + padding_bottom + qrcode_height)
+        # 确保高度不小于最小高度
+        return max(int(total_height), height_config['min_height'])
 
     def generate_image(self, fate, output_file='output.png'):
         try:

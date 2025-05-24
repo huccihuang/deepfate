@@ -1,0 +1,41 @@
+# 图片基本设置
+[image]
+width = 1080
+font_size = 30
+font_family = "Arial"
+background_color = "#FFFEF8"
+text_color = "#333"
+
+# 布局相关设置
+[layout]
+line_height_ratio = 1.5
+list_margin_bottom = 5
+
+[layout.padding]
+top = 50
+right = 50
+bottom = 50
+left = 50
+
+# 二维码设置
+[qr_code]
+width = 200
+height = 200
+margin_top = 20
+margin_bottom = 20
+caption_font_size = 16
+caption_color = "#666"
+caption_text = "扫码看看我的"
+
+# 资源文件路径
+[assets]
+font_path = "assets/XiaolaiSC-Regular.ttf"
+qr_code_path = "assets/deepfate_qr_code.png"
+
+# 在已有配置的基础上添加以下内容
+[layout.height_calculation]
+side_padding = 40  # 左右两侧的padding总和
+line_height_ratio = 1.5  # 行高是字体大小的倍数
+padding_top = 150  # 上padding
+padding_bottom = 150  # 下padding
+min_height = 500  # 最小图片高度
