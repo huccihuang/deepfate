@@ -9,7 +9,7 @@ class FateCalculator:
         )
     
     def calculate(self, name, sex, birthdate, birthtime, birth_city, system_prompt, user_prompt):
-        response = self.client.chat.completions.create(
+        stream = self.client.chat.completions.create(
             model="deepseek-chat",
             messages=[
                 {'role':'system', 'content': system_prompt},
@@ -20,6 +20,8 @@ class FateCalculator:
                     birthtime=birthtime, 
                     birth_city=birth_city
                 )},  
-            ]
+            ],
+            stream=True  # 启用流式输出
         )
-        return response.choices[0].message.content
+        
+        return stream
