@@ -1,11 +1,16 @@
+import math
 import os
 import tempfile
 import textwrap
 from pathlib import Path
+
 import markdown2
 from html2image import Html2Image
 
 class HtmlStyleBuilder:
+    '''
+    构建html样式
+    '''
     def __init__(self, font_path=None, font_family='Arial', font_size=30):
         self.font_path = font_path
         self.font_family = font_family
@@ -81,6 +86,9 @@ class HtmlStyleBuilder:
 
 
 class ImageGenerator:
+    '''
+    根据传入的md文本生成图片
+    '''
     def __init__(self, font_family='Arial', font_size=30, font_path=None, width=1080):
         self.width = width
         self.html_builder = HtmlStyleBuilder(
@@ -90,8 +98,32 @@ class ImageGenerator:
         )
 
     def _calculate_image_height(self, text):
-        lines = text.split('\n')
-        return len(lines) * self.html_builder.font_size * 2 + 300
+        # 计算实际的文本宽度（考虑容器宽度和padding）
+        available_width = self.width - 40  # 假设左右各有20px的padding
+        
+        # 使用更精确的行高比例
+        line_height_ratio = 1.5  # 一般建议行高是字体大小的1.5倍
+        
+        # 计算每行能容纳的大概字符数（假设中文字符宽度约等于字体大小）
+        chars_per_line = available_width // self.html_builder.font_size
+        
+        # 分割文本并计算实际行数
+        total_lines = 0
+        for paragraph in text.split('\n'):
+            # 计算这段文字需要的行数（向上取整）
+            if paragraph.strip():  # 忽略空行
+                lines_needed = math.ceil(len(paragraph) / chars_per_line)
+                total_lines += lines_needed
+            else:
+                total_lines += 1  # 空行也算一行
+        
+        # 计算总高度：行数 * 行高 + 上下padding
+        base_height = total_lines * self.html_builder.font_size * line_height_ratio
+        padding_top = 150  # 上padding
+        padding_bottom = 150  # 下padding
+        qrcode_height = 200
+        
+        return int(base_height + padding_top + padding_bottom + qrcode_height)
 
     def generate_image(self, fate, output_file='output.png'):
         try:
