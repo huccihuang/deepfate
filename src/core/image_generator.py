@@ -18,10 +18,10 @@ def load_config():
 CONFIG = load_config()
 
 class HtmlStyleBuilder:
-    def __init__(self, font_path=None, font_family=CONFIG['image']['font_family'], font_size=CONFIG['image']['font_size']):
-        self.font_path = font_path
-        self.font_family = font_family
-        self.font_size = font_size
+    def __init__(self):
+        self.font_path = Path(__file__).parent.parent.parent / CONFIG['assets']['font_path']
+        self.font_family = CONFIG['image']['font_family']
+        self.font_size = CONFIG['image']['font_size']
         self.qr_code_path = Path(__file__).parent.parent.parent / CONFIG['assets']['qr_code_path']
 
     def _get_font_style(self):
@@ -89,14 +89,9 @@ class HtmlStyleBuilder:
 
 
 class ImageGenerator:
-    def __init__(self, font_family=CONFIG['image']['font_family'], font_size=CONFIG['image']['font_size'], 
-                 font_path=None, width=CONFIG['image']['width']):
-        self.width = width
-        self.html_builder = HtmlStyleBuilder(
-            font_path=Path(__file__).parent.parent.parent / CONFIG['assets']['font_path'],
-            font_family=font_family,
-            font_size=font_size
-        )
+    def __init__(self):
+        self.width = CONFIG['image']['width']
+        self.html_builder = HtmlStyleBuilder()
 
     def _calculate_image_height(self, text):
         height_config = CONFIG['layout']['height_calculation']

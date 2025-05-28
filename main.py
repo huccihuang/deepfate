@@ -48,5 +48,5 @@ if start_btn:
 
 if not st.session_state.response_shown and st.session_state.response:
     result.markdown(st.session_state.response)
-    show_share_btn()    
+    show_share_btn()
 
